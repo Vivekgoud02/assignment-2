@@ -1,0 +1,122 @@
+# -*- coding: utf-8 -*-
+
+# Importing required libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+def read_data(file):
+
+    # Reading data in worldbank format
+    wb_data = pd.read_csv(file, index_col = ['Country Name', 'Series Name'])
+    print(wb_data)
+    
+    
+    df = wb_data.drop(['Country Code', 'Series Code'], axis = 1)
+      
+   
+    df.rename(columns={'1991 [YR1991]': '1991', '1992 [YR1992]':'1992', 
+    '1993 [YR1993]': '1993', '1994 [YR1994]':'1994', '1995 [YR1995]': '1995', 
+    '1996 [YR1996]': '1996', '1997 [YR1997]':'1997', '1998 [YR1998]': '1998', 
+    '1999 [YR1999]': '1999', '2000 [YR2000]':'2000'}, inplace = True)
+    
+    
+    
+    
+               
+   
+    df['1991'] = pd.to_numeric(df['1991'], errors='coerce')
+    df['1992'] = pd.to_numeric(df['1992'], errors='coerce')
+    
+    
+    df1 = df.T
+    
+    return df, df1
+
+df, df1 = read_data('Climate_Data.csv')
+
+
+
+
+# Defining variables
+years = df1.index
+countries = ['Ghana', 'Nigeria', 'Algeria', 'Canada', 'US','Brazil',
+             'Argentina', 'India', 'China', 'Kazakhstan','Australia',
+             'Russia', 'UK',]
+
+
+# Creating dataframes
+poplu = df1.xs('Population, total', level=1, axis = 1).dropna()
+CO2 = df1.xs('CO2 emissions (kt)', level=1, axis = 1).dropna()
+gdp = df1.xs('GDP (current US$)', level=1, axis = 1).dropna()
+forest = df1.xs('Forest area (% of land area)', level=1, axis = 1).dropna()
+water = df1.xs('Annual freshwater withdrawals, total (% of internal resources)',
+             level=1, axis = 1).dropna()
+renewable_egy = df1.xs('Renewable energy consumption (% of total final energy consumption)',
+             level=1, axis = 1).dropna()
+
+#descriptive stats
+stats_categorical = df1.describe(include='all')
+print(stats_categorical)
+
+
+
+# Plotting of Bar Graph of population
+poplu.T.iloc[:,1::2].plot(kind='bar', figsize=(15,15), width=0.8)
+
+plt.xlabel('Countries')
+plt.ylabel('Population')
+plt.title('Total population of countries over the years')
+plt.legend()
+plt.savefig('Pop_Bar_graph.png')
+
+
+#Plotting of Bar graph of annual freshwater withdrawals per country 
+water.T.iloc[:,1::2].plot(kind='bar', figsize=(20,20), width=0.8)
+
+plt.xlabel('Countries')
+plt.ylabel('Total fresh water withdrawals')
+plt.title('Totalfresh water withdrawals of countries over the years')
+plt.legend()
+plt.savefig('Water_Bar_graph.png')
+
+
+
+#Plotting Line graph showing CO2 emmissions
+CO2.iloc[::].plot(kind='line', figsize=(15,15), linestyle=':', linewidth=4)
+
+plt.xlabel('Years')
+plt.ylabel('CO2 Emissions (kt)')
+plt.title(' CO2 Emissions over the years per Country')
+plt.legend(fontsize='large')
+plt.savefig('CO2_Line_graph.png')
+
+
+#Plotting Line graph showing GDP
+gdp.iloc[::].plot(kind='line', figsize=(15,15), linestyle=':', linewidth=4)
+
+plt.xlabel('Years')
+plt.ylabel('GDP (current US$)')
+plt.title(' GDP (US$) of all countries over the years')
+plt.legend(fontsize='large')
+plt.savefig('GDP_Line_graph.png')
+
+plt.show()
+
+
+#Creating a variable indicator that holds all the indicators in the data
+#indicators = pop, water, CO2, gdp, forest, renewable_egy
+
+
+#correlation
+Ghana = df1.xs('Ghana', level=0, axis=1)
+ghana_corr = Ghana.corr()
+
+
+sns.heatmap(ghana_corr, annot=True, cmap='hot', fmt='.2f')
+plt.title('Correlation Matrix for Ghana')
+plt.savefig('GH_HeatMap.png')
+plt.show()
+
+
